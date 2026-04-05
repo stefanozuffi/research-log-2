@@ -1,0 +1,464 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0d1117; }
+::-webkit-scrollbar-thumb { background: #21262d; border-radius: 3px; }
+
+body {
+  font-family: 'IBM Plex Mono', 'Fira Code', monospace;
+  background: #0d1117;
+  color: #c9d1d9;
+  min-height: 100vh;
+  -webkit-app-region: drag;
+}
+
+button, input, textarea, select, a {
+  -webkit-app-region: no-drag;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #388bfd !important;
+}
+
+/* ── Header ── */
+.header {
+  border-bottom: 1px solid #21262d;
+  padding: 32px 36px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #e6edf3;
+  letter-spacing: -0.5px;
+}
+
+.header-sub {
+  font-size: 13px;
+  color: #484f58;
+  font-weight: 300;
+}
+
+.header-tag {
+  font-size: 12px;
+  color: #2d6a4f;
+  margin-left: auto;
+}
+
+/* ── Tabs ── */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #21262d;
+  padding: 0 28px;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #484f58;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: 400;
+  transition: all 0.15s;
+}
+
+.tab-btn:hover {
+  color: #8b949e;
+}
+
+.tab-btn.active {
+  border-bottom-color: #58a6ff;
+  color: #e6edf3;
+  font-weight: 500;
+}
+
+/* ── Content ── */
+.content {
+  padding: 24px 28px;
+  max-width: 900px;
+}
+
+/* ── Sections ── */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 14px;
+  color: #e6edf3;
+  font-weight: 500;
+}
+
+.section-count {
+  font-size: 11px;
+  color: #484f58;
+}
+
+.section + .section {
+  margin-top: 24px;
+}
+
+/* ── Cards ── */
+.card {
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.card:hover {
+  opacity: 0.85;
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-icon {
+  font-size: 13px;
+}
+
+.card-title {
+  font-size: 13px;
+  color: #e6edf3;
+}
+
+.card-cat {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-detail {
+  font-size: 12px;
+  color: #8b949e;
+  margin-top: 3px;
+  padding-left: 21px;
+}
+
+.card-notes {
+  font-size: 12px;
+  color: #6e7681;
+  margin-top: 3px;
+  padding-left: 21px;
+}
+
+.card-deadline {
+  font-size: 11px;
+  color: #f0883e;
+}
+
+.card-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-del-btn {
+  background: none;
+  border: none;
+  color: #484f58;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.card:hover .card-del-btn {
+  opacity: 1;
+}
+
+.card-del-btn:hover {
+  color: #f85149;
+  background: rgba(248, 81, 73, 0.12);
+}
+
+/* Learning card category colors */
+.card-learning { border-left: 3px solid; }
+.card-learning.cat-ai-safety  { background: #1a2733; border-color: #2d6a4f; }
+.card-learning.cat-math       { background: #1a2233; border-color: #3a5fa0; }
+.card-learning.cat-ml         { background: #271a33; border-color: #7b2d8b; }
+.card-learning.cat-philosophy { background: #33291a; border-color: #b08030; }
+.card-learning.cat-swe        { background: #1a3333; border-color: #2d8b8b; }
+
+.cat-ai-safety  .card-icon, .cat-ai-safety  .card-cat { color: #95d5b2; }
+.cat-math       .card-icon, .cat-math       .card-cat { color: #8ab4f8; }
+.cat-ml         .card-icon, .cat-ml         .card-cat { color: #d4a5e0; }
+.cat-philosophy .card-icon, .cat-philosophy .card-cat { color: #f0d090; }
+.cat-swe        .card-icon, .cat-swe        .card-cat { color: #80d8d8; }
+
+/* Generic card (opportunities, writing) */
+.card-generic {
+  background: #161b22;
+  border: 1px solid #21262d;
+}
+
+.card-generic .card-icon {
+  color: #58a6ff;
+}
+
+/* ── Sub-section label ── */
+.sub-label {
+  font-size: 11px;
+  color: #484f58;
+  margin-bottom: 6px;
+  margin-top: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ── Goals box ── */
+.goals-box {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.goal-row {
+  margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.goal-label {
+  font-size: 10px;
+  color: #58a6ff;
+  min-width: 52px;
+  text-transform: uppercase;
+  padding-top: 2px;
+}
+
+.goal-text {
+  font-size: 13px;
+  color: #c9d1d9;
+  line-height: 1.5;
+}
+
+/* ── Goals edit ── */
+.goal-edit-box {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.goal-edit-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.goal-edit-title {
+  font-size: 14px;
+  color: #e6edf3;
+  font-weight: 500;
+}
+
+.goal-edit-hint {
+  font-size: 11px;
+  color: #484f58;
+}
+
+.goal-textarea {
+  width: 100%;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  padding: 12px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.toolbar-count {
+  font-size: 13px;
+  color: #484f58;
+}
+
+.add-btn {
+  background: #21262d;
+  border: 1px solid #30363d;
+  color: #58a6ff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.add-btn:hover {
+  background: #30363d;
+}
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-box {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 24px;
+  width: 90%;
+  max-width: 480px;
+}
+
+.modal-title {
+  font-size: 15px;
+  color: #e6edf3;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.field-group {
+  margin-bottom: 14px;
+}
+
+.field-label {
+  font-size: 11px;
+  color: #484f58;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.field-input {
+  width: 100%;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.field-textarea {
+  width: 100%;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  padding: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.field-row > div {
+  flex: 1;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-delete {
+  background: none;
+  border: 1px solid #3d1f1f;
+  color: #f85149;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn-delete:hover {
+  background: #3d1f1f;
+}
+
+.btn-cancel {
+  background: none;
+  border: 1px solid #21262d;
+  color: #8b949e;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background: #21262d;
+}
+
+.btn-save {
+  background: #238636;
+  border: none;
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-save:hover {
+  background: #2ea043;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+}
