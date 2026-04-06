@@ -36,6 +36,7 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   align-items: center;
   gap: 20px;
+  background-color: rgba(48, 7, 7, 0.6);
 }
 
 .header-title {
@@ -62,6 +63,7 @@ input:focus, textarea:focus, select:focus {
 .tab-bar {
   display: flex;
   gap: 0;
+  align-items: center;
   border-bottom: 1px solid #21262d;
   padding: 0 28px;
 }
@@ -87,6 +89,29 @@ input:focus, textarea:focus, select:focus {
   border-bottom-color: #58a6ff;
   color: #e6edf3;
   font-weight: 500;
+}
+
+/* ── Search ── */
+.search-input {
+  margin-left: auto;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  width: 160px;
+  transition: border-color 0.15s, width 0.2s;
+}
+
+.search-input:focus {
+  width: 220px;
+  border-color: #388bfd !important;
+}
+
+.search-input::placeholder {
+  color: #484f58;
 }
 
 /* ── Content ── */
@@ -177,6 +202,51 @@ input:focus, textarea:focus, select:focus {
   color: #f0883e;
 }
 
+/* ── Resource cards ── */
+.card-resource {
+  background: #161b22;
+  border: 1px solid #21262d;
+  cursor: pointer;
+}
+
+.card-resource:hover {
+  border-color: #388bfd;
+}
+
+.resource-type-badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.type-paper  { background: #1a2733; color: #8ab4f8; }
+.type-repo   { background: #1a3323; color: #95d5b2; }
+.type-course { background: #271a33; color: #d4a5e0; }
+.type-blog   { background: #33291a; color: #f0d090; }
+.type-other  { background: #21262d; color: #8b949e; }
+
+/* ── Tag chips ── */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+  padding-left: 0;
+}
+
+.tag-chip {
+  font-size: 10px;
+  color: #8b949e;
+  background: #21262d;
+  border-radius: 4px;
+  padding: 2px 7px;
+  letter-spacing: 0.3px;
+}
+
+/* ── Card action buttons ── */
 .card-right {
   display: flex;
   align-items: center;
@@ -203,6 +273,28 @@ input:focus, textarea:focus, select:focus {
 .card-del-btn:hover {
   color: #f85149;
   background: rgba(248, 81, 73, 0.12);
+}
+
+.card-edit-btn {
+  background: none;
+  border: none;
+  color: #484f58;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.card:hover .card-edit-btn {
+  opacity: 1;
+}
+
+.card-edit-btn:hover {
+  color: #58a6ff;
+  background: rgba(88, 166, 255, 0.12);
 }
 
 /* Learning card category colors */

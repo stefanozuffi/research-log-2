@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const path = require("path");
 
 let store;
@@ -50,6 +50,10 @@ ipcMain.handle("store:list", (_event, prefix) => {
   const allKeys = Object.keys(store.store);
   const filtered = prefix ? allKeys.filter((k) => k.startsWith(prefix)) : allKeys;
   return { keys: filtered };
+});
+
+ipcMain.handle("shell:openExternal", (_event, url) => {
+  shell.openExternal(url);
 });
 
 app.whenReady().then(async () => {

@@ -11,6 +11,8 @@ const CAT_LABELS = {
   philosophy: "phil", swe: "swe",
 };
 
+const RESOURCE_TYPES = ["paper", "repo", "course", "blog", "other"];
+
 const INITIAL_DATA = {
   learning: [
     { id: "l1", title: "Technical AI Safety — BlueDot Impact", status: "active", category: "ai-safety", notes: "Facilitated by AISA" },
@@ -26,6 +28,7 @@ const INITIAL_DATA = {
   writings: [
     { id: "w1", title: "Outer vs Inner Alignment", detail: "Focus: representational stability of features as attractors", status: "idea", notes: "" },
   ],
+  resources: [],
   goals: {
     long: "Research intertwining math, CS, and philosophy — neurosymbolic AI, AI safety, formal methods",
     medium: "Get stronger at software engineering; build showcase projects",
@@ -37,6 +40,7 @@ const INITIAL_DATA = {
 
 let data = null;
 let currentTab = "overview";
+let searchQuery = "";
 
 // ─── Storage helpers ───
 
@@ -45,6 +49,7 @@ async function loadData() {
     const stored = await window.storage.get("stefano-dashboard-v2");
     if (stored?.value) {
       data = JSON.parse(stored.value);
+      if (!data.resources) data.resources = [];
     } else {
       data = structuredClone(INITIAL_DATA);
       await saveData();
@@ -68,7 +73,18 @@ async function deleteItem(listKey, id) {
   if (!window.confirm("Are you sure you want to delete this?")) return;
   data[listKey] = data[listKey].filter((x) => x.id !== id);
   await saveData();
-  render();
+  updateContent();
+}
+
+// ─── Search helper ───
+
+function applySearch(items) {
+  if (!searchQuery) return items;
+  const q = searchQuery.toLowerCase();
+  return items.filter((item) => {
+    const text = [item.title, item.detail, item.notes, ...(item.tags || [])].join(" ").toLowerCase();
+    return text.includes(q);
+  });
 }
 
 // ─── Rendering helpers ───
@@ -135,6 +151,28 @@ function genericCard(item, type) {
   return card;
 }
 
+function resourceCard(item) {
+  const card = h("div", { className: "card card-resource", onClick: () => item.url && window.shell.openExternal(item.url) },
+    h("div", { className: "card-row" },
+      h("div", { className: "card-left" },
+        h("span", { className: `resource-type-badge type-${item.type || "other"}` }, item.type || "other"),
+        h("span", { className: "card-title" }, item.title),
+      ),
+      h("div", { className: "card-right" },
+        h("button", { className: "card-edit-btn", onClick: (e) => { e.stopPropagation(); openModal("resource", item); } }, "✎"),
+        h("button", { className: "card-del-btn", onClick: (e) => { e.stopPropagation(); deleteItem("resources", item.id); } }, "×"),
+      ),
+    ),
+  );
+  if (item.tags && item.tags.length > 0) {
+    card.appendChild(h("div", { className: "tag-row" },
+      ...item.tags.map((t) => h("span", { className: "tag-chip" }, t)),
+    ));
+  }
+  if (item.notes) card.appendChild(h("div", { className: "card-notes" }, item.notes));
+  return card;
+}
+
 function sectionBlock(title, count, ...children) {
   return h("div", { className: "section" },
     h("div", { className: "section-header" },
@@ -148,8 +186,8 @@ function sectionBlock(title, count, ...children) {
 // ─── Tab renderers ───
 
 function renderOverview() {
-  const active = data.learning.filter((l) => l.status === "active");
-  const upcoming = data.learning.filter((l) => l.status === "upcoming");
+  const active = applySearch(data.learning.filter((l) => l.status === "active"));
+  const upcoming = applySearch(data.learning.filter((l) => l.status === "upcoming"));
 
   const learningSection = sectionBlock("Active Learning", active.length,
     ...active.map((l) => learningCard(l)),
@@ -160,12 +198,15 @@ function renderOverview() {
     upcoming.forEach((l) => learningSection.appendChild(learningCard(l)));
   }
 
-  const oppSection = sectionBlock("Opportunities", data.opportunities.length,
-    ...data.opportunities.map((o) => genericCard(o, "opportunity")),
+  const opps = applySearch(data.opportunities);
+  const writes = applySearch(data.writings);
+
+  const oppSection = sectionBlock("Opportunities", opps.length,
+    ...opps.map((o) => genericCard(o, "opportunity")),
   );
 
-  const writeSection = sectionBlock("Writing Ideas", data.writings.length,
-    ...data.writings.map((w) => genericCard(w, "writing")),
+  const writeSection = sectionBlock("Writing Ideas", writes.length,
+    ...writes.map((w) => genericCard(w, "writing")),
   );
 
   const goalsBox = h("div", { className: "goals-box" },
@@ -182,32 +223,46 @@ function renderOverview() {
 }
 
 function renderLearning() {
+  const items = applySearch(data.learning);
   return h("div", {},
     h("div", { className: "toolbar" },
-      h("span", { className: "toolbar-count" }, `${data.learning.length} tracks`),
+      h("span", { className: "toolbar-count" }, `${items.length} tracks`),
       h("button", { className: "add-btn", onClick: () => openModal("learning", null) }, "+ add"),
     ),
-    ...data.learning.map((l) => learningCard(l, true)),
+    ...items.map((l) => learningCard(l, true)),
   );
 }
 
 function renderOpportunities() {
+  const items = applySearch(data.opportunities);
   return h("div", {},
     h("div", { className: "toolbar" },
-      h("span", { className: "toolbar-count" }, `${data.opportunities.length} items`),
+      h("span", { className: "toolbar-count" }, `${items.length} items`),
       h("button", { className: "add-btn", onClick: () => openModal("opportunity", null) }, "+ add"),
     ),
-    ...data.opportunities.map((o) => genericCard(o, "opportunity")),
+    ...items.map((o) => genericCard(o, "opportunity")),
   );
 }
 
 function renderWriting() {
+  const items = applySearch(data.writings);
   return h("div", {},
     h("div", { className: "toolbar" },
-      h("span", { className: "toolbar-count" }, `${data.writings.length} pieces`),
+      h("span", { className: "toolbar-count" }, `${items.length} pieces`),
       h("button", { className: "add-btn", onClick: () => openModal("writing", null) }, "+ add"),
     ),
-    ...data.writings.map((w) => genericCard(w, "writing")),
+    ...items.map((w) => genericCard(w, "writing")),
+  );
+}
+
+function renderResources() {
+  const items = applySearch(data.resources);
+  return h("div", {},
+    h("div", { className: "toolbar" },
+      h("span", { className: "toolbar-count" }, `${items.length} links`),
+      h("button", { className: "add-btn", onClick: () => openModal("resource", null) }, "+ add"),
+    ),
+    ...items.map((r) => resourceCard(r)),
   );
 }
 
@@ -223,7 +278,6 @@ function renderGoals() {
       const textarea = h("textarea", {
         className: "goal-textarea",
         rows: "3",
-        value: data.goals[g.key],
       });
       textarea.value = data.goals[g.key];
       textarea.addEventListener("input", async (e) => {
@@ -252,15 +306,22 @@ function openModal(type, existingItem) {
     item = { id: "l" + Date.now(), title: "", status: "active", category: "ai-safety", notes: "" };
   } else if (type === "opportunity") {
     item = { id: "o" + Date.now(), title: "", detail: "", status: "researching", deadline: "", notes: "" };
+  } else if (type === "resource") {
+    item = { id: "r" + Date.now(), title: "", url: "", type: "paper", tags: [], notes: "" };
   } else {
     item = { id: "w" + Date.now(), title: "", detail: "", status: "idea", notes: "" };
   }
 
   const isNew = !existingItem;
-  const typeLabel = type === "learning" ? "Learning Track" : type === "opportunity" ? "Opportunity" : "Writing Piece";
-  const listKey = type === "learning" ? "learning" : type === "opportunity" ? "opportunities" : "writings";
+  const typeLabel = type === "learning" ? "Learning Track"
+    : type === "opportunity" ? "Opportunity"
+    : type === "resource" ? "Resource"
+    : "Writing Piece";
+  const listKey = type === "learning" ? "learning"
+    : type === "opportunity" ? "opportunities"
+    : type === "resource" ? "resources"
+    : "writings";
 
-  // Build form fields
   const titleInput = h("input", { className: "field-input", placeholder: "Title" });
   titleInput.value = item.title;
   titleInput.addEventListener("input", (e) => { item.title = e.target.value; });
@@ -268,6 +329,25 @@ function openModal(type, existingItem) {
   const detailInput = h("input", { className: "field-input", placeholder: "Detail" });
   detailInput.value = item.detail || "";
   detailInput.addEventListener("input", (e) => { item.detail = e.target.value; });
+
+  const urlInput = h("input", { className: "field-input", placeholder: "https://..." });
+  urlInput.value = item.url || "";
+  urlInput.addEventListener("input", (e) => { item.url = e.target.value; });
+
+  const tagsInput = h("input", { className: "field-input", placeholder: "comma-separated tags" });
+  tagsInput.value = (item.tags || []).join(", ");
+  tagsInput.addEventListener("input", (e) => {
+    item.tags = e.target.value.split(",").map((t) => t.trim()).filter(Boolean);
+  });
+
+  const resourceTypeSelect = h("select", { className: "field-input" },
+    ...RESOURCE_TYPES.map((t) => {
+      const opt = h("option", { value: t }, t);
+      if (t === (item.type || "paper")) opt.selected = true;
+      return opt;
+    }),
+  );
+  resourceTypeSelect.addEventListener("change", (e) => { item.type = e.target.value; });
 
   const statusSelect = h("select", { className: "field-input" },
     ...Object.entries(STATUS_ICONS).map(([s, icon]) => {
@@ -295,7 +375,6 @@ function openModal(type, existingItem) {
   notesArea.value = item.notes || "";
   notesArea.addEventListener("input", (e) => { item.notes = e.target.value; });
 
-  // Build row of selects
   const rowChildren = [
     h("div", {},
       h("div", { className: "field-label" }, "Status"),
@@ -321,7 +400,7 @@ function openModal(type, existingItem) {
     else data[listKey].push(item);
     await saveData();
     closeModal();
-    render();
+    updateContent();
   };
 
   const del = async () => {
@@ -329,24 +408,54 @@ function openModal(type, existingItem) {
     data[listKey] = data[listKey].filter((x) => x.id !== item.id);
     await saveData();
     closeModal();
-    render();
+    updateContent();
   };
 
-  const box = h("div", { className: "modal-box", onClick: (e) => e.stopPropagation() },
-    h("div", { className: "modal-title" }, typeLabel),
+  // Build modal fields based on type
+  const fields = [
     h("div", { className: "field-group" },
       h("div", { className: "field-label" }, "Title"),
       titleInput,
     ),
-    type !== "learning" ? h("div", { className: "field-group" },
-      h("div", { className: "field-label" }, "Detail"),
-      detailInput,
-    ) : null,
-    h("div", { className: "field-row" }, ...rowChildren),
+  ];
+
+  if (type === "resource") {
+    fields.push(
+      h("div", { className: "field-group" },
+        h("div", { className: "field-label" }, "URL"),
+        urlInput,
+      ),
+      h("div", { className: "field-row" },
+        h("div", {},
+          h("div", { className: "field-label" }, "Type"),
+          resourceTypeSelect,
+        ),
+        h("div", {},
+          h("div", { className: "field-label" }, "Tags"),
+          tagsInput,
+        ),
+      ),
+    );
+  } else {
+    if (type !== "learning") {
+      fields.push(h("div", { className: "field-group" },
+        h("div", { className: "field-label" }, "Detail"),
+        detailInput,
+      ));
+    }
+    fields.push(h("div", { className: "field-row" }, ...rowChildren));
+  }
+
+  fields.push(
     h("div", { className: "field-group" },
       h("div", { className: "field-label" }, "Notes"),
       notesArea,
     ),
+  );
+
+  const box = h("div", { className: "modal-box", onClick: (e) => e.stopPropagation() },
+    h("div", { className: "modal-title" }, typeLabel),
+    ...fields,
     h("div", { className: "modal-actions" },
       isNew
         ? h("div")
@@ -367,9 +476,33 @@ function closeModal() {
   if (overlay) overlay.remove();
 }
 
+// ─── Content updater (used for search/save without full re-render) ───
+
+function updateContent() {
+  const content = document.querySelector(".content");
+  if (!content) return;
+  content.innerHTML = "";
+  switch (currentTab) {
+    case "overview":      content.appendChild(renderOverview()); break;
+    case "learning":      content.appendChild(renderLearning()); break;
+    case "opportunities": content.appendChild(renderOpportunities()); break;
+    case "writing":       content.appendChild(renderWriting()); break;
+    case "resources":     content.appendChild(renderResources()); break;
+    case "goals":         content.appendChild(renderGoals()); break;
+  }
+}
+
 // ─── Main render ───
 
-const TABS = ["overview", "learning", "opportunities", "writing", "goals"];
+const TABS = ["overview", "learning", "opportunities", "writing", "resources", "goals"];
+
+// Maps tab name to the modal type opened by the "n" shortcut
+const TAB_NEW_TYPE = {
+  learning: "learning",
+  opportunities: "opportunity",
+  writing: "writing",
+  resources: "resource",
+};
 
 function render() {
   const app = document.getElementById("app");
@@ -384,29 +517,58 @@ function render() {
     ),
   );
 
-  // Tabs
+  // Tabs + search
+  const searchInput = h("input", {
+    className: "search-input",
+    placeholder: "search… (/)",
+    id: "search-input",
+  });
+  searchInput.value = searchQuery;
+  searchInput.addEventListener("input", (e) => {
+    searchQuery = e.target.value;
+    updateContent();
+  });
+
   const tabBar = h("div", { className: "tab-bar" },
-    ...TABS.map((t) => {
-      const btn = h("button", {
+    ...TABS.map((t) =>
+      h("button", {
         className: `tab-btn ${t === currentTab ? "active" : ""}`,
-        onClick: () => { currentTab = t; render(); },
-      }, t);
-      return btn;
-    }),
+        onClick: () => { currentTab = t; searchQuery = ""; render(); },
+      }, t),
+    ),
+    searchInput,
   );
   app.appendChild(tabBar);
 
   // Content
   const content = h("div", { className: "content" });
-  switch (currentTab) {
-    case "overview":      content.appendChild(renderOverview()); break;
-    case "learning":      content.appendChild(renderLearning()); break;
-    case "opportunities": content.appendChild(renderOpportunities()); break;
-    case "writing":       content.appendChild(renderWriting()); break;
-    case "goals":         content.appendChild(renderGoals()); break;
-  }
   app.appendChild(content);
+  updateContent();
 }
+
+// ─── Keyboard shortcuts ───
+
+document.addEventListener("keydown", (e) => {
+  // Ignore when typing in an input/textarea/select
+  const tag = document.activeElement?.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+    if (e.key === "Escape") {
+      document.activeElement.blur();
+      closeModal();
+    }
+    return;
+  }
+
+  if (e.key === "Escape") {
+    closeModal();
+  } else if (e.key === "n" || e.key === "N") {
+    const type = TAB_NEW_TYPE[currentTab];
+    if (type) openModal(type, null);
+  } else if (e.key === "/") {
+    e.preventDefault();
+    document.getElementById("search-input")?.focus();
+  }
+});
 
 // ─── Init ───
 

@@ -6,3 +6,7 @@ contextBridge.exposeInMainWorld("storage", {
   delete: (key) => ipcRenderer.invoke("store:delete", key),
   list: (prefix) => ipcRenderer.invoke("store:list", prefix),
 });
+
+contextBridge.exposeInMainWorld("shell", {
+  openExternal: (url) => ipcRenderer.invoke("shell:openExternal", url),
+});
